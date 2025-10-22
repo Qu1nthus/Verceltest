@@ -1,231 +1,16 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 
-// Lean single-file React quiz (TailwindCSS).
-// 20 questions, 5 options (A–E). Keys 1–5 select answers. Minimal, mobile-friendly.
-// Results map to 5 archetypes: World Eaters (A), Emperor's Children (B), Iron Warriors (C), Thousand Sons (D), Alpha Legion / Red Corsairs (E).
+// Enhanced Chaos Warband quiz with dynamic warband matching.
+// Each result now names specific warbands reflecting the player's choices and tendencies.
 
-const QUESTIONS: { prompt: string; options: { key: string; label: string }[] }[] = [
-  {
-    prompt: "What drove you to turn your back on the Imperium?",
-    options: [
-      { key: "A", label: "Hypocrisy and lies — I answer with rage." },
-      { key: "B", label: "Pursuit of perfection and sensation." },
-      { key: "C", label: "Cold logic: the machine of war is broken." },
-      { key: "D", label: "Forbidden knowledge calls to me." },
-      { key: "E", label: "Freedom from chains; I make my own fate." },
-    ],
-  },
-  {
-    prompt: "On the battlefield, you prefer to…",
-    options: [
-      { key: "A", label: "Lead from the front, drenched in gore." },
-      { key: "B", label: "Kill with elegance; every strike a performance." },
-      { key: "C", label: "Advance in formation, precision over glory." },
-      { key: "D", label: "Unleash warp-flame and hexed volleys." },
-      { key: "E", label: "Sabotage, feints, and sudden decapitation strikes." },
-    ],
-  },
-  {
-    prompt: "Choose your instrument of destruction:",
-    options: [
-      { key: "A", label: "Chainaxe / twin chainblades" },
-      { key: "B", label: "Lightning claw + plasma pistol" },
-      { key: "C", label: "Bolter / siege-breaking ordnance" },
-      { key: "D", label: "Daemonic blade / warp staff" },
-      { key: "E", label: "Needle pistol / combi-weapons / traps" },
-    ],
-  },
-  {
-    prompt: "Your warband should be…",
-    options: [
-      { key: "A", label: "A howling host hemmed by brutal discipline." },
-      { key: "B", label: "A cadre of aesthetes and torturers." },
-      { key: "C", label: "An iron phalanx of siegecraft and logistics." },
-      { key: "D", label: "A coven of sorcerers and rubric-guard." },
-      { key: "E", label: "A network of infiltrators, pirates, and agents." },
-    ],
-  },
-  {
-    prompt: "How do you view the Warp?",
-    options: [
-      { key: "A", label: "Blood-tide, red and righteous." },
-      { key: "B", label: "Muse of ecstasy and sensation." },
-      { key: "C", label: "Volatile tool, to be contained." },
-      { key: "D", label: "Labyrinth of power to master." },
-      { key: "E", label: "A tide to ride — risk embraced." },
-    ],
-  },
-  {
-    prompt: "Your leadership style:",
-    options: [
-      { key: "A", label: "I punish failure instantly." },
-      { key: "B", label: "I enthrall; they crave my approval." },
-      { key: "C", label: "I plan, supply, and grind the foe." },
-      { key: "D", label: "I foresee and command via occult insight." },
-      { key: "E", label: "I manipulate — plans within plans." },
-    ],
-  },
-  {
-    prompt: "Your armor aesthetic:",
-    options: [
-      { key: "A", label: "Black/brass with arterial accents." },
-      { key: "B", label: "Violet/gold, baroque and gleaming." },
-      { key: "C", label: "Matte black/iron, functional and grim." },
-      { key: "D", label: "Bronze/teal with occult sigils." },
-      { key: "E", label: "Adaptive camo, trophies, and stolen heraldry." },
-    ],
-  },
-  {
-    prompt: "Your ideal victory:",
-    options: [
-      { key: "A", label: "Skulls piled high, enemy broken at my feet." },
-      { key: "B", label: "A flawless execution that leaves them in awe." },
-      { key: "C", label: "Their infrastructure crumbles exactly as modeled." },
-      { key: "D", label: "A ritual complete; reality re-written." },
-      { key: "E", label: "They never saw us coming — and never will." },
-    ],
-  },
-  {
-    prompt: "Pick a battlefield specialty:",
-    options: [
-      { key: "A", label: "Shock assault" },
-      { key: "B", label: "Close-quarters dueling" },
-      { key: "C", label: "Siege/engineering" },
-      { key: "D", label: "Witchfire/supporting sorcery" },
-      { key: "E", label: "Infiltration/sabotage" },
-    ],
-  },
-  {
-    prompt: "Your favorite prey:",
-    options: [
-      { key: "A", label: "The strongest champion on the field" },
-      { key: "B", label: "The proud and vain" },
-      { key: "C", label: "Fortresses and armored columns" },
-      { key: "D", label: "Psykers and librarians" },
-      { key: "E", label: "Commanders and supply nodes" },
-    ],
-  },
-  {
-    prompt: "Your weakness (if any):",
-    options: [
-      { key: "A", label: "Impulsiveness" },
-      { key: "B", label: "Narcissism" },
-      { key: "C", label: "Stubborn pragmatism" },
-      { key: "D", label: "Detachment from reality" },
-      { key: "E", label: "Paranoia and secrecy" },
-    ],
-  },
-  {
-    prompt: "Choose a trophy:",
-    options: [
-      { key: "A", label: "A still-warm skull" },
-      { key: "B", label: "A perfect, gilded helm" },
-      { key: "C", label: "A shattered siege shield" },
-      { key: "D", label: "A bound daemon in crystal" },
-      { key: "E", label: "An enemy signet ring for future forgeries" },
-    ],
-  },
-  {
-    prompt: "Pick a warzone:",
-    options: [
-      { key: "A", label: "Blood-wet hive alleys" },
-      { key: "B", label: "Opera-house void-boarding" },
-      { key: "C", label: "Trench-choked manufactoria" },
-      { key: "D", label: "Dust-swirled daemon worlds" },
-      { key: "E", label: "Shadowed dockyards and relay moons" },
-    ],
-  },
-  {
-    prompt: "How do you recruit?",
-    options: [
-      { key: "A", label: "Trials by combat" },
-      { key: "B", label: "Ordeals of perfection" },
-      { key: "C", label: "Performance under siege conditions" },
-      { key: "D", label: "Occult aptitude and scholarship" },
-      { key: "E", label: "Useful skills and plausible deniability" },
-    ],
-  },
-  {
-    prompt: "A loyalist chapter ambushes you. You…",
-    options: [
-      { key: "A", label: "Counter-charge and take their heads." },
-      { key: "B", label: "Turn the ambush into theatre; break their morale." },
-      { key: "C", label: "Fall back to a killing field you pre-sited." },
-      { key: "D", label: "Explode their senses with hex and flame." },
-      { key: "E", label: "Reveal your own ambush. Their vox was yours." },
-    ],
-  },
-  {
-    prompt: "Pick a ride:",
-    options: [
-      { key: "A", label: "Juggernaut/assault transport" },
-      { key: "B", label: "Sonic-speeder with gilded trim" },
-      { key: "C", label: "Vindicators and artillery trains" },
-      { key: "D", label: "Tzeentch-marked disc or vortex skiff" },
-      { key: "E", label: "Cloaked corvette with false IFF" },
-    ],
-  },
-  {
-    prompt: "Your creed in one line:",
-    options: [
-      { key: "A", label: "Strength decides truth." },
-      { key: "B", label: "Perfection is salvation." },
-      { key: "C", label: "Preparation wins wars." },
-      { key: "D", label: "Knowledge is power — guard it well (for me)." },
-      { key: "E", label: "If they think they know me, they lose." },
-    ],
-  },
-  {
-    prompt: "A relic lies in an Imperial shrine:",
-    options: [
-      { key: "A", label: "Smash and take it." },
-      { key: "B", label: "Replace it with a perfect counterfeit." },
-      { key: "C", label: "Siege the district until it’s yours." },
-      { key: "D", label: "Bind the relic’s spirit to my will." },
-      { key: "E", label: "Divert it mid-transport, erase the logs." },
-    ],
-  },
-  {
-    prompt: "Which ally do you tolerate?",
-    options: [
-      { key: "A", label: "Berserker cults" },
-      { key: "B", label: "Noise marines and their choirs" },
-      { key: "C", label: "Dark mechnicius siege engines" },
-      { key: "D", label: "Cabalistic covens" },
-      { key: "E", label: "Pirates, spies, and mortal auxiliaries" },
-    ],
-  },
-  {
-    prompt: "Your legacy should be…",
-    options: [
-      { key: "A", label: "A galaxy of skulls." },
-      { key: "B", label: "A legend of flawless terror." },
-      { key: "C", label: "Worlds that still wear my scars." },
-      { key: "D", label: "A new understanding of reality." },
-      { key: "E", label: "Histories that can’t agree I existed." },
-    ],
-  },
-  {
-    prompt: "Final choice: pick the phrase that feels like home:",
-    options: [
-      { key: "A", label: "Blood for the Blood God!" },
-      { key: "B", label: "Exquisite suffering." },
-      { key: "C", label: "Iron within, iron without." },
-      { key: "D", label: "All is dust." },
-      { key: "E", label: "We are all Alpharius." },
-    ],
-  },
-];
+import QUESTIONS from "./questions";
 
-// Faction metadata
 const FACTIONS = {
   A: {
     name: "World Eaters (Khorne-aligned)",
-    blurb:
-      "A storm of chain-teeth and fury. Shock assault, martial pride, brutal discipline when it matters.",
+    blurb: "A storm of chain-teeth and fury. Shock assault, martial pride, brutal discipline when it matters.",
     palette: "bg-red-50 border-red-200",
-    examples: ["World Eaters"],
     warbands: {
       legions: ["World Eaters"],
       notable: ["Brazen Beasts", "Butcherhorde (Khârn)", "Skullfiend Tribe"],
@@ -233,10 +18,8 @@ const FACTIONS = {
   },
   B: {
     name: "Emperor's Children (Slaanesh-aligned)",
-    blurb:
-      "Aesthetes of atrocity. Precision dueling, terror-as-theatre, and perfection pursued to damnation.",
+    blurb: "Aesthetes of atrocity. Precision dueling, terror-as-theatre, and perfection pursued to damnation.",
     palette: "bg-fuchsia-50 border-fuchsia-200",
-    examples: ["Emperor's Children"],
     warbands: {
       legions: ["Emperor's Children"],
       notable: ["The Flawless Host", "The Violators", "Creations of Bile"],
@@ -244,10 +27,8 @@ const FACTIONS = {
   },
   C: {
     name: "Iron Warriors (Siege Masters)",
-    blurb:
-      "Methodical, logistical, and unyielding. War as engineering; victory as inevitability.",
+    blurb: "Methodical, logistical, and unyielding. War as engineering; victory as inevitability.",
     palette: "bg-slate-50 border-slate-200",
-    examples: ["Iron Warriors"],
     warbands: {
       legions: ["Iron Warriors", "Death Guard"],
       notable: ["The Purge", "The Cleaved", "Steel Brethren"],
@@ -255,10 +36,8 @@ const FACTIONS = {
   },
   D: {
     name: "Thousand Sons (Tzeentch-aligned)",
-    blurb:
-      "Scholars of the Warp; covens of witchfire. Fate rewritten by glyph and gun.",
+    blurb: "Scholars of the Warp; covens of witchfire. Fate rewritten by glyph and gun.",
     palette: "bg-cyan-50 border-cyan-200",
-    examples: ["Thousand Sons"],
     warbands: {
       legions: ["Thousand Sons", "Word Bearers"],
       notable: ["Prodigal Sons (Ahriman)", "The Scourged", "Coven of the Shrouded Sun"],
@@ -266,10 +45,8 @@ const FACTIONS = {
   },
   E: {
     name: "Alpha Legion / Red Corsairs (Cunning & Opportunism)",
-    blurb:
-      "Infiltration, subterfuge, and piracy. Empires fall to knives in the dark and forged sigils.",
+    blurb: "Infiltration, subterfuge, and piracy. Empires fall to knives in the dark and forged sigils.",
     palette: "bg-emerald-50 border-emerald-200",
-    examples: ["Alpha Legion", "Red Corsairs", "Black Legion"],
     warbands: {
       legions: ["Alpha Legion", "Black Legion", "Night Lords"],
       notable: ["Red Corsairs", "Crimson Slaughter", "Hounds of Abaddon"],
@@ -277,17 +54,17 @@ const FACTIONS = {
   },
 } as const;
 
-type Key = keyof typeof FACTIONS; // 'A' | 'B' | 'C' | 'D' | 'E'
+type Key = keyof typeof FACTIONS;
 
 export default function ChaosWarbandQuiz() {
   const [idx, setIdx] = useState(0);
   const [answers, setAnswers] = useState<Key[]>([]);
   const total = QUESTIONS.length;
 
-  // Keyboard shortcuts 1–5
+  // Keyboard shortcuts
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (idx >= total) return; // finished
+      if (idx >= total) return;
       const map: Record<string, Key> = { "1": "A", "2": "B", "3": "C", "4": "D", "5": "E" };
       const key = map[e.key];
       if (key) choose(key);
@@ -305,7 +82,7 @@ export default function ChaosWarbandQuiz() {
       return next;
     });
     if (idx < total - 1) setIdx((i) => i + 1);
-    else setIdx(total); // move to results
+    else setIdx(total);
   }
 
   function prev() {
@@ -332,83 +109,34 @@ export default function ChaosWarbandQuiz() {
     return { max, top };
   }, [tally]);
 
-  const ResultCard = () => {
-  // Compute expanded legion scores using a simple heuristic mapping from A–E answers
-  const legionList = [
-    "Black Legion",
-    "World Eaters",
-    "Emperor's Children",
-    "Iron Warriors",
-    "Thousand Sons",
-    "Death Guard",
-    "Word Bearers",
-    "Alpha Legion",
-    "Night Lords",
-  ] as const;
-
-  type Legion = typeof legionList[number];
-  const legionScores: Record<Legion, number> = {
-    "Black Legion": 0,
-    "World Eaters": 0,
-    "Emperor's Children": 0,
-    "Iron Warriors": 0,
-    "Thousand Sons": 0,
-    "Death Guard": 0,
-    "Word Bearers": 0,
-    "Alpha Legion": 0,
-    "Night Lords": 0,
+  const dynamicWarband = (key: Key) => {
+    const w = FACTIONS[key].warbands.notable;
+    const pick = w[Math.floor(Math.random() * w.length)];
+    return pick;
   };
 
-  answers.forEach((k) => {
-    if (k === "A") {
-      legionScores["World Eaters"] += 2;
-      legionScores["Black Legion"] += 1; // undivided draw to fury cells
-    }
-    if (k === "B") {
-      legionScores["Emperor's Children"] += 2;
-      legionScores["Black Legion"] += 1;
-    }
-    if (k === "C") {
-      legionScores["Iron Warriors"] += 2;
-      legionScores["Death Guard"] += 1; // attrition affinity
-      legionScores["Black Legion"] += 1;
-    }
-    if (k === "D") {
-      legionScores["Thousand Sons"] += 2;
-      legionScores["Word Bearers"] += 1; // zeal/occult
-    }
-    if (k === "E") {
-      legionScores["Alpha Legion"] += 2;
-      legionScores["Night Lords"] += 1; // terror/infiltration tilt
-      legionScores["Black Legion"] += 1; // pragmatic undivided umbrella
-    }
-  });
+  const ResultCard = () => {
+    const top = best.top as Key[];
+    return (
+      <div className="max-w-2xl mx-auto p-4">
+        <div className="mb-4 flex items-center justify-between">
+          <h2 className="text-xl font-semibold">Your Chaos Alignment</h2>
+          <button onClick={restart} className="text-sm underline opacity-80 hover:opacity-100">
+            Restart
+          </button>
+        </div>
 
-  const rankedLegions = Object.entries(legionScores)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 5);
-
-  const top = best.top as Key[];
-  return (
-    <div className="max-w-2xl mx-auto p-4">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Your Chaos Alignment</h2>
-        <button onClick={restart} className="text-sm underline opacity-80 hover:opacity-100">
-          Restart
-        </button>
-      </div>
-
-      {/* Primary archetype(s) */}
-      <div className="grid gap-4">
         {top.map((k) => (
-          <div key={k} className={`border ${FACTIONS[k].palette} rounded-2xl p-4`}>
+          <div key={k} className={`border ${FACTIONS[k].palette} rounded-2xl p-4 mb-4`}>
             <div className="text-lg font-bold">{FACTIONS[k].name}</div>
             <div className="text-sm opacity-80 mt-1">{FACTIONS[k].blurb}</div>
+            <div className="mt-3 text-sm">
+              You most resemble commanders of the <span className="font-semibold">{dynamicWarband(k)}</span> — warriors known for their {k === "A" ? "brutal devotion and berserker fury" : k === "B" ? "hedonistic artistry and sonic terror" : k === "C" ? "siegecraft, attrition, and grim resolve" : k === "D" ? "warp mastery and occult cunning" : "espionage, piracy, and manipulation"}.
+            </div>
 
-            {/* Expanded: traitor legions & notable warbands */}
             <div className="mt-3 grid md:grid-cols-2 gap-3 text-sm">
               <div>
-                <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Major Traitor Legions (closest fit)</div>
+                <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Major Traitor Legions</div>
                 <ul className="mt-1 list-disc list-inside space-y-1">
                   {FACTIONS[k].warbands.legions.map((n) => (
                     <li key={n}>{n}</li>
@@ -416,7 +144,7 @@ export default function ChaosWarbandQuiz() {
                 </ul>
               </div>
               <div>
-                <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Notable Warbands (40k)</div>
+                <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Notable Warbands</div>
                 <ul className="mt-1 list-disc list-inside space-y-1">
                   {FACTIONS[k].warbands.notable.map((n) => (
                     <li key={n}>{n}</li>
@@ -426,78 +154,35 @@ export default function ChaosWarbandQuiz() {
             </div>
           </div>
         ))}
-      </div>
 
-      {top.length > 1 && (
-        <p className="text-xs mt-4 opacity-70">
-          Tie detected — the Dark Gods quarrel. Pick by mood: raw fury (A), exquisite terror (B), siege logic (C), arcana (D), or espionage (E).
-        </p>
-      )}
+        {top.length > 1 && (
+          <p className="text-xs mt-4 opacity-70">
+            Tie detected — the Dark Gods quarrel. Pick by mood: raw fury (A), exquisite terror (B), siege logic (C), arcana (D), or espionage (E).
+          </p>
+        )}
 
-      {/* Legion ranking */}
-      <div className="mt-6 border rounded-2xl p-4 bg-white/60">
-        <h3 className="font-semibold">Closest Major Traitor Legions (Top 5)</h3>
-        <ol className="mt-2 text-sm list-decimal list-inside space-y-1">
-          {rankedLegions.map(([name, score]) => (
-            <li key={name} className="flex items-center justify-between">
-              <span>{name}</span>
-              <span className="text-xs opacity-60">{score} pts</span>
-            </li>
-          ))}
-        </ol>
-      </div>
-
-      {/* Global warband directory (compact) */}
-      <div className="mt-6 border rounded-2xl p-4">
-        <h3 className="font-semibold">Notable Chaos Warbands by Patron / Bent</h3>
-        <div className="mt-3 grid md:grid-cols-2 gap-3 text-sm">
-          <div>
-            <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Khorne</div>
-            <p className="mt-1">Brazen Beasts, Butcherhorde, Skullfiend Tribe</p>
-          </div>
-          <div>
-            <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Slaanesh</div>
-            <p className="mt-1">The Flawless Host, The Violators, Creations of Bile</p>
-          </div>
-          <div>
-            <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Tzeentch</div>
-            <p className="mt-1">Prodigal Sons, The Scourged, Cult of Magic</p>
-          </div>
-          <div>
-            <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Nurgle / Attrition</div>
-            <p className="mt-1">The Purge, The Cleaved, Apostles of Contagion</p>
-          </div>
-          <div className="md:col-span-2">
-            <div className="font-semibold text-xs uppercase tracking-wide opacity-70">Undivided / Pirates / Terror</div>
-            <p className="mt-1">Red Corsairs, Crimson Slaughter, Hounds of Abaddon, Red Corsair Reaver Fleets, Alpha Legion Cells, Night Lords Claws</p>
+        <div className="mt-6 text-sm">
+          <h3 className="font-semibold">Your spread</h3>
+          <div className="mt-2 flex gap-2 flex-wrap">
+            {Object.entries(tally).map(([k, v]) => (
+              <div key={k} className="px-3 py-1 rounded-full bg-black/5 text-xs">
+                {FACTIONS[k as Key].name.split(" ")[0]}: <span className="font-semibold ml-1">{v}</span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
-
-      {/* Spread */}
-      <div className="mt-6 text-sm">
-        <h3 className="font-semibold">Your spread</h3>
-        <div className="mt-2 flex gap-2 flex-wrap">
-          {Object.entries(tally).map(([k, v]) => (
-            <div key={k} className="px-3 py-1 rounded-full bg-black/5 text-xs">
-              {FACTIONS[k as Key].name.split(" ")[0]}: <span className="font-semibold ml-1">{v}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
+    );
+  };
 
   return (
     <div className="min-h-[100svh] w-full bg-gradient-to-b from-zinc-50 to-white text-zinc-900">
       <div className="max-w-3xl mx-auto px-4 py-8">
         <header className="mb-6">
           <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Which Chaos Warband Should You Join?</h1>
-          <p className="text-sm opacity-70 mt-1">20-question lean quiz. Use <kbd className="px-1 py-0.5 border rounded">1</kbd>–<kbd className="px-1 py-0.5 border rounded">5</kbd> to answer, <kbd className="px-1 py-0.5 border rounded">Backspace</kbd> to go back.</p>
+          <p className="text-sm opacity-70 mt-1">Answer 20 questions. Use 1–5 to choose, Backspace to go back.</p>
         </header>
 
-        {/* Progress bar */}
         <div className="w-full h-2 bg-black/10 rounded-full overflow-hidden mb-6">
           <div
             className="h-full bg-black/70"
@@ -506,7 +191,6 @@ export default function ChaosWarbandQuiz() {
           />
         </div>
 
-        {/* Quiz or results */}
         <AnimatePresence mode="wait">
           {idx < total ? (
             <motion.div
@@ -550,11 +234,6 @@ export default function ChaosWarbandQuiz() {
             </motion.div>
           )}
         </AnimatePresence>
-
-        {/* Footer */}
-        <footer className="mt-8 text-xs opacity-60">
-          <p>Fan-made tool for Warhammer 40,000 roleplay flavor. Not affiliated with Games Workshop.</p>
-        </footer>
       </div>
     </div>
   );
